@@ -17,7 +17,7 @@ volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
 #define OP_CE       5
 #define OP_SQUARED  0
 
-
+#define MAX_DIGITS 7
 #define NO_DP 10
 
 typedef struct read_name {
@@ -213,33 +213,16 @@ void error_string( uint32_t* str, uint32_t error_code)
 	str[8] = error_code + 48;
 }
 
-// little inefficient, but preserves order of digits
-void int_to_string(uint32_t* str, uint32_t ipart, uint32_t ilen)
+void int_to_string(uint32_t* str, uint32_t display_number)
 {
 	uint32_t i, digit;
 	uint32_t j=1;
-    
-    for ( i=ilen; i>0; i-- )
+
+    for ( i=MAX_DIGITS; i>0; i-- )
     {
-    	digit = ( ipart / (uint32_t) power10(i-1) ) % 10;
-    	str[j] = digit + '0';
-		j++;
-    }
-}
-
-void decimal_to_string(uint32_t* str, float f, uint32_t ilen, int32_t flen)
-{
-	uint32_t i, digit;
-	uint32_t j=ilen+1;
-
-    f = f * power10( flen);
-    uint32_t y = (uint32_t) (f+0.5);
-
-    for ( i=flen; i>0; i-- )
-    {
-    	digit = ( y / (uint32_t) power10(i-1) ) % 10;
-    	str[j] = digit + '0';
-		j++;
+    	digit  = display_number % 10;
+    	str[i] = digit + '0';
+    	display_number = display_number / 10;
     }
 }
 
@@ -277,36 +260,30 @@ uint32_t float_to_string( float f, uint32_t* str )
     	error_string( str, 2 );
     	return NO_DP;
     } 
+
+
     // float can be displayed
     else{
-        ipart = (int) f;
-        fpart = f - ipart;
-        if ( ipart == 0 ){
-        	ilen = 1;
-            flen = 7;
-            str[1] = '0';
+        if ( f < 1 ){
+        	DP = 1;
         }
         else{
-	        for ( i=1; i<8; i++ )
-	        {
-	        	if ( ipart < power10( i) )
-	        	{
-	        		ilen = i;
-	        		flen = 7-i;
-	        		break;
-	        	}
-	        }
-	        int_to_string(str, ipart, ilen);
+	    	for ( i=1; i<8; i++ )
+	    	{
+	    		if ( f < power10(i) ){
+	    			DP = i;
+	    			break;
+	    		}
+	    	}
 	    }
-	    if ( fpart < power10( -flen) ){
-	    	DP = ilen;
-	    } else {
-	    	DP = ilen;
-	    	decimal_to_string(str, fpart, ilen, flen);
-	    }
+    	f = f * power10(MAX_DIGITS-DP);
+    	uint32_t y = (uint32_t) (f+0.5);
+    	int_to_string(str, y);
+
+
+   		DP = right_align_string(str, DP);
+    	return DP;
     }
-    DP = right_align_string(str, DP);
-    return DP;
 }
 
 
