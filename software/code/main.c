@@ -18,7 +18,7 @@ volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
 #define OP_DP       6
 #define OP_SQUARED  0
 
-
+#define DISPLAY_SIZE 9
 #define MAX_DIGITS 7
 #define NO_DP 10
 
@@ -30,7 +30,6 @@ typedef struct read_name {
 float power10(int y);
 void intToStr(int x, char str[]);
 read_type read_pad(void);
-void float_to_display( float f);
 void string_to_display( uint32_t* number_string, uint32_t DP_position );
 uint8_t char_to_display_code( uint8_t c );
 float calc(float num1, float num2, int op);
@@ -46,138 +45,56 @@ float power10(int y) { // if the power function is only used for powers of 10 th
 	return out;
 }
 
-// read_type read_pad()
-// {
-// 	uint32_t digits=0;
-// 	uint32_t i;
-// 	uint32_t DP=10;
-// 	uint32_t key_pressed;
-// 	read_type result = { .number = 0, .function = 0};
-
-// 	uint32_t str_float[9];
-
-// 	while(1)
-// 	{
-// 		key_pressed = *keypad_buffer;
-// 		if ( key_pressed != 0 )
-// 		{
-// 			if ( (key_pressed>15) && (digits<MAX_DIGITS+1) )
-// 			{
-// 				digits++;
-// 				for ( i=8-digit; i<MAX_DIGITS+1; i++ )
-// 				{
-// 					str_float[0] = str_float[1]; // shift digits across
-// 				str_float[1] = str_float[2];
-// 				str_float[2] = str_float[3];
-// 				str_float[3] = str_float[4];
-// 				str_float[4] = str_float[5];
-// 				str_float[5] = str_float[6];
-// 				str_float[6] = str_float[7];
-// 				str_float[7] = str_float[8];
-
-// 				if(DP == 10){
-// 					// all of the temp-16 can probably be assigned to a variable
-// 					result.number = result.number * 10 + (temp-16);
-// 				}
-// 				else{
-// 					result.number += (temp-16)* power10((DP-i));
-// 					str_float[9] = str_float[9] - 1; // shift the dp when new numbers entered
-// 				}
-				
-// 				str_float[8] = temp + 32;
-// 			}
-// 			else if ( key_pressed == OP_DP )
-// 			{
-
-// 			}
-// 			else if ( key_pressed == OP_C )
-// 			{
-
-// 			}
-// 			else{
-// 				result.function = key_pressed;
-// 				return result;	
-// 			}
-// 		}
-// }
-
 read_type read_pad()
 {
-	int i=0;
-	int DP=10;
-	int temp;
-	int clear_all = 0;
+	uint32_t key_pressed;
+	uint32_t digits;
+	uint32_t i;
 	read_type result = { .number = 0, .function = 0};
-	
-	uint32_t str_float[10];
-	clear_string(str_float, (uint32_t) 9);
-//	str_float[8] = ' ';
-	
-	str_float[9] = 10;
-	while(1)
-	{
-		temp = *keypad_buffer;
-		if(temp != 0)
-		{
-			if((temp>15)&&(i<9)) { // number
-				i++;
-				str_float[0] = str_float[1]; // shift digits across
-				str_float[1] = str_float[2];
-				str_float[2] = str_float[3];
-				str_float[3] = str_float[4];
-				str_float[4] = str_float[5];
-				str_float[5] = str_float[6];
-				str_float[6] = str_float[7];
-				str_float[7] = str_float[8];
 
-				if(DP == 10){
-					// all of the temp-16 can probably be assigned to a variable
-					result.number = result.number * 10 + (temp-16);
+	while( 1 ){
+		key_pressed = *keypad_buffer;
+		if ( key_pressed ){
+			if( (key_pressed > 15) && (digits < MAX_DIGITS) ){ // number
+				digits++;
+
+				// update sting
+				// left shit current buffer values
+				for ( i=0; i<DISPLAY_SIZE-1; i++ )
+				{
+					str_float[i] = str_float[i+1];
+				}
+				str_float[8] == (key_pressed-16) + '0';
+
+				// update float
+				if (DP == NO_DP){
+					result.number = result.number * 10 + (key_pressed-16);
 				}
 				else{
-					result.number += (temp-16)* power10((DP-i));
-					str_float[9] = str_float[9] - 1; // shift the dp when new numbers entered
+					DP--;
+					result.number = result.number + (key_pressed-16)*power10(DP-8);
 				}
-				
-				str_float[8] = temp + 32;
-				clear_all = 0;
+
 			}
-			else if(temp==6) { // decimal point
-				DP = i;
-				str_float[9] = 8;
-				clear_all = 0;
+			else if( key_pressed == OP_DP ){ // DP
+				if (DP == NO_DP){
+					DP = 8;
+				}
 			}
-			else if(temp==5) { // clear // may need to change if. what if typing num2 and then press ce
+			else if( key_pressed == OP_C ){ //CLEAR
+				DP = NO_DP;
 				result.number = 0;
-				i = 0;
-				DP = 10;
-				str_float[0] = ' '; // need to clear display
-				str_float[1] = ' ';
-				str_float[2] = ' ';
-				str_float[3] = ' ';
-				str_float[4] = ' ';
-				str_float[5] = ' ';
-				str_float[6] = ' ';
-				str_float[7] = ' ';
-				str_float[8] = ' ';
-				str_float[9] = 10;
-
-				if(clear_all){
-					result.function = temp;
-					return result;
-				}
-				clear_all = 1;
-
-			}	
-			else {// operation
+				digits = 0;
+				clear_string(str_float);
+			}
+			else{ // function
 				result.function = temp;
 				return result;
 			}
-			string_to_display(str_float, str_float[9]);
 		}
+		string_to_display(str_float, DP);
 	}
 }
-
 
 uint8_t char_to_display_code( uint8_t c )
 {
@@ -209,7 +126,7 @@ void string_to_display( uint32_t* number_string, uint32_t DP_position )
 {
 	uint32_t i;
 
-	for( i=0; i<9; i++ )
+	for( i=0; i<DISPLAY_SIZE; i++ )
 	{
 		if ( i == DP_position ){
 			// code in DP position has 16 added to it to code for the decimal point
@@ -258,10 +175,10 @@ uint32_t right_align_string( uint32_t* str, uint32_t DP)
 }
 
 
-void clear_string( uint32_t* str, uint32_t length )
+void clear_string( uint32_t* str )
 {
 	uint32_t i;
-	for ( i=0; i<length; i++)
+	for ( i=0; i<DISPLAY_SIZE; i++)
 	{
 		str[i] = ' ';
 	}
@@ -300,7 +217,7 @@ uint32_t float_to_string( float f, uint32_t* str )
 	uint32_t y;
     
     // clear the number string
-	clear_string(str, 9);
+	clear_string(str);
 
     // set sign char
 	if ( f < 0 ){
@@ -378,9 +295,8 @@ int main(void) {
 	int op;
 	uint32_t DP;
 	read_type x;
-	uint32_t buf[9];
+	uint32_t buf[DISPLAY_SIZE];
 
-	// float_to_display(x);
 	uint32_t mode = 0;
 	while(1)
 	{
@@ -399,7 +315,6 @@ int main(void) {
 			// need a check if op is OP SQUARED and return the answer
 			// if (op == OP_SQUARED){
 			//	   num1 = num1 * num1;
-			// 	   float_to_display(num1);
 			// }
         }
         else{
