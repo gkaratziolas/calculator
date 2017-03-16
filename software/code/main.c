@@ -48,12 +48,14 @@ float power10(int y) { // if the power function is only used for powers of 10 th
 read_type read_pad()
 {
 	uint32_t key_pressed;
-	uint32_t digits;
-	uint32_t i;
-	uint32_t DP;
+	uint32_t digits = 0;
+	uint32_t i = 0;
+	uint32_t DP = NO_DP;
 	uint32_t str_float[DISPLAY_SIZE];
 	read_type result = { .number = 0, .function = 0};
 
+	clear_string(str_float);
+	
 	while( 1 ){
 		key_pressed = *keypad_buffer;
 		if ( key_pressed ){
