@@ -33,7 +33,7 @@ read_type read_pad(void);
 void string_to_display( uint32_t* number_string, uint32_t DP_position );
 uint8_t char_to_display_code( uint8_t c );
 float calc(float num1, float num2, int op);
-void clear_string( uint32_t* str, uint32_t length );
+void clear_string( uint32_t* str );
 
 //power function, eg 2^3 = 8
 float power10(int y) { // if the power function is only used for powers of 10 this could be optimised and x could be an int
@@ -50,6 +50,8 @@ read_type read_pad()
 	uint32_t key_pressed;
 	uint32_t digits;
 	uint32_t i;
+	uint32_t DP;
+	uint32_t str_float[DISPLAY_SIZE];
 	read_type result = { .number = 0, .function = 0};
 
 	while( 1 ){
@@ -64,7 +66,7 @@ read_type read_pad()
 				{
 					str_float[i] = str_float[i+1];
 				}
-				str_float[8] == (key_pressed-16) + '0';
+				str_float[8] = (key_pressed-16) + '0';
 
 				// update float
 				if (DP == NO_DP){
@@ -88,7 +90,7 @@ read_type read_pad()
 				clear_string(str_float);
 			}
 			else{ // function
-				result.function = temp;
+				result.function = key_pressed;
 				return result;
 			}
 		}
