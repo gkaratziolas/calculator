@@ -141,6 +141,9 @@ uint8_t char_to_display_code( uint8_t c )
 void string_to_display( uint32_t* number_string, uint32_t DP_position )
 {
 	uint32_t i;
+	if ( DP_position == 9 ){
+		DP_position = NO_DP;
+	}
 	for( i=0; i<9; i++ )
 	{
 		if ( i == DP_position ){
