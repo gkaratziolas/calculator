@@ -55,7 +55,6 @@ read_type read_pad()
 	uint32_t str_float[DISPLAY_SIZE];
 	read_type result = { .number = 0, .function = 0};
 
-	clear_string(str_float);
 	
 	while( 1 ){
 		key_pressed = *keypad_buffer;
@@ -309,7 +308,7 @@ int main(void) {
 	uint32_t DP;
 	read_type x;
 	uint32_t buf[DISPLAY_SIZE];
-
+	clear_string(buf);
 	uint32_t mode = 0;
 	while(1)
 	{
