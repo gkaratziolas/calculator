@@ -151,18 +151,6 @@ void string_to_display( uint32_t* number_string, uint32_t DP_position )
 }
 
 
-// reverses a string 'str' of length 'len'
-void reverse( char *str, int len )
-{
-    int i=0, j=len-1, temp;
-    while (i<j)
-    {
-        temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
-        i++; j--;
-    }
-}
 
 uint32_t right_align_string( uint32_t* str, uint32_t DP)
 {
