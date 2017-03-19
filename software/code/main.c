@@ -13,6 +13,7 @@ volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
 #define OP_MINUS    9
 #define OP_TIMES    10
 #define OP_DIVIDE   11
+#define OP_NEGATIVE 12
 #define OP_EQUALS   4
 #define OP_C        5
 #define OP_DP       6
@@ -90,6 +91,14 @@ read_type read_pad()
 				result.number = 0;
 				digits = 0;
 				clear_string(str_float);
+			}
+			else if(  key_pressed == OP_NEGATIVE ){
+				result.number = result.number * -1;
+				if ( str_float > 0 ){
+					str_float[0] = "-";
+				}else{
+					str_float[0] = " ";
+				}
 			}
 			else{ // function
 				result.function = key_pressed;
