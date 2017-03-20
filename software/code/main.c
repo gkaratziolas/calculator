@@ -103,7 +103,8 @@ read_type read_pad()
 				// clear entry
 				if ( result.number == 0 && DP == NO_DP )
 				{
-					return OP_C;
+					result.function = OP_C;
+					return result;
 				}
 				DP = NO_DP;
 				result.number = 0;
