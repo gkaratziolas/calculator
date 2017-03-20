@@ -100,7 +100,7 @@ read_type read_pad()
 				}
 			}
 			else if( key_pressed == OP_C ){ //CLEAR
-				// clear all variables and buffers
+				// clear entry
 				DP = NO_DP;
 				result.number = 0;
 				digits = 0;
@@ -108,11 +108,10 @@ read_type read_pad()
 				str_float[8] = '0';
 			}
 			else if(  key_pressed == OP_NEGATIVE ){
-				result.number = result.number * -1;
-				if ( str_float > 0 ){
-					str_float[0] = "-";
-				}else{
-					str_float[0] = " ";
+				// if number is non-zero, number is replaced by -1*number
+				if ( result.number != 0 ){
+					result.number = result.number * -1;
+					str_float[0] = ( result.number > 0 ) ? " ": "-";
 				}
 			}
 			else{ // function
@@ -313,6 +312,9 @@ int main(void) {
 	uint32_t DP;
 	read_type x;
 	clear_string(str_float);
+	str_float[8] = '2';
+	str_float[7] = 'U';
+	string_to_display(str_float, NO_DP);
 	uint32_t mode = 0;
 	while(1)
 	{
@@ -327,11 +329,6 @@ int main(void) {
 				num1 = x.number;
 				mode = 1;
 			}
-
-			// need a check if op is OP SQUARED and return the answer
-			// if (op == OP_SQUARED){
-			//	   num1 = num1 * num1;
-			// }
         }
         else{
 			x = read_pad();
