@@ -6,8 +6,7 @@
 #define SEG_BASE_ADDR 0x40000000
 #define PAD_BASE_ADDR 0x50000000
 
-volatile uint32_t* display_buffer  = (volatile uint32_t*) SEG_BASE_ADDR;
-volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
+
 
 #define OP_PLUS     8
 #define OP_MINUS    9
@@ -22,6 +21,12 @@ volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
 #define DISPLAY_SIZE 9
 #define MAX_DIGITS 7
 #define NO_DP 10
+
+
+volatile uint32_t* display_buffer  = (volatile uint32_t*) SEG_BASE_ADDR;
+volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
+
+volatile uint32_t* str_float[DISPLAY_SIZE];
 
 typedef struct read_name {
    float number;
@@ -52,21 +57,22 @@ read_type read_pad()
 	uint32_t digits = 0;
 	uint32_t i = 0;
 	uint32_t DP = NO_DP;
-	uint32_t str_float[DISPLAY_SIZE];
 	read_type result = { .number = 0, .function = 0};
-
+	clear_string(str_float);
+	str_float[8] = '0';
 	
 	while( 1 ){
 		key_pressed = *keypad_buffer;
 		if ( key_pressed ){
 			if( (key_pressed > 15) && (digits < MAX_DIGITS) ){ // number
 				digits++;
-
 				// update sting
-				// left shit current buffer values
-				for ( i=0; i<DISPLAY_SIZE-1; i++ )
-				{
-					str_float[i] = str_float[i+1];
+				// if string already has entries, left shift entries
+				if ( digits > 1 ){
+					for ( i=0; i<DISPLAY_SIZE-1; i++ )
+					{
+						str_float[i] = str_float[i+1];
+					}
 				}
 				str_float[8] = (key_pressed-16) + '0';
 
@@ -78,18 +84,28 @@ read_type read_pad()
 					DP--;
 					result.number = result.number + (key_pressed-16)*power10(DP-8);
 				}
-
 			}
 			else if( key_pressed == OP_DP ){ // DP
+				// if the DP has not already been pressed
+				// put DP in least significant position
 				if (DP == NO_DP){
 					DP = 8;
+					// if the DP is the first key pressed
+					// set buffer to "0."
+					if ( digits == 0 )
+					{
+						str_float[8] = '0';
+						digits = 1;
+					}
 				}
 			}
 			else if( key_pressed == OP_C ){ //CLEAR
+				// clear all variables and buffers
 				DP = NO_DP;
 				result.number = 0;
 				digits = 0;
 				clear_string(str_float);
+				str_float[8] = '0';
 			}
 			else if(  key_pressed == OP_NEGATIVE ){
 				result.number = result.number * -1;
@@ -103,10 +119,11 @@ read_type read_pad()
 				result.function = key_pressed;
 				return result;
 			}
+			string_to_display(str_float, DP);
 		}
-		string_to_display(str_float, DP);
 	}
 }
+
 
 uint8_t char_to_display_code( uint8_t c )
 {
@@ -160,7 +177,7 @@ uint32_t right_align_string( uint32_t* str, uint32_t DP)
 			return NO_DP;
 		}
 		// shift string left
-		// str[0] remains the same (sign bit)
+		// str[0] remains the same (sign character)
 		str[8] = str[7];
 		str[7] = str[6];
 		str[6] = str[5];
@@ -295,8 +312,7 @@ int main(void) {
 	int op;
 	uint32_t DP;
 	read_type x;
-	uint32_t buf[DISPLAY_SIZE];
-	clear_string(buf);
+	clear_string(str_float);
 	uint32_t mode = 0;
 	while(1)
 	{
@@ -324,8 +340,8 @@ int main(void) {
 			op = x.function;
 			if ( op == OP_EQUALS ){
 				mode = 0;
-				DP = float_to_string(num1, buf);
-				string_to_display(buf, DP);
+				DP = float_to_string(num1, str_float);
+				string_to_display(str_float, DP);
 			}
 			else if ( op == OP_C ){
 				mode = 0;
@@ -333,8 +349,8 @@ int main(void) {
 				num2 = 0;
 			}
 			else{
-				DP = float_to_string(num1, buf);
-				string_to_display(buf, DP);
+				DP = float_to_string(num1, str_float);
+				string_to_display(str_float, DP);
 			}
 		}
 	}
