@@ -56,6 +56,7 @@ read_type read_pad()
     uint32_t digits = 0;
     uint32_t i = 0;
     uint32_t DP = NO_DP;
+    int32_t sign = 1;
     read_type result = { .number = 0, .function = 0};
     clear_string(str_float);
     str_float[8] = '0';
@@ -113,12 +114,11 @@ read_type read_pad()
             }
             else if(  key_pressed == OP_NEGATIVE ){
                 // if number is non-zero, number is replaced by -1*number
-                if ( result.number != 0 ){
-                    result.number = result.number * -1;
-                    str_float[0] = ( result.number > 0 ) ? ' ': '-';
-                }
+                sign = -1*sign;
+                str_float[0] = ( sign > 0 ) ? ' ': '-';
             }
             else{ // function
+                result.number = sign * result.number;
                 result.function = key_pressed;
                 return result;
             }
