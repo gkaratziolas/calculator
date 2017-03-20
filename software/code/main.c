@@ -329,6 +329,12 @@ int main(void) {
 				mode = 0;
 				num1 = 0;
 			}
+			else if ( op = OP_SQUARED ){
+				num1 = x.number*x.number;
+				DP = float_to_string(num1, str_float);
+				string_to_display(str_float, DP);
+				mode = 0;
+			}
 			else{
 				num1 = x.number;
 				mode = 1;
@@ -348,6 +354,12 @@ int main(void) {
 				mode = 0;
 				num1 = 0;
 				num2 = 0;
+			}
+			else if ( op = OP_SQUARED ){
+				num1 = num1 * num1;
+				DP = float_to_string(num1, str_float);
+				string_to_display(str_float, DP);
+				mode = 0;
 			}
 			else{
 				DP = float_to_string(num1, str_float);
