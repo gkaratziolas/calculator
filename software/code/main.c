@@ -101,6 +101,10 @@ read_type read_pad()
 			}
 			else if( key_pressed == OP_C ){ //CLEAR
 				// clear entry
+				if ( result.number == 0 && DP == NO_DP )
+				{
+					return OP_C;
+				}
 				DP = NO_DP;
 				result.number = 0;
 				digits = 0;
