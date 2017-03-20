@@ -26,7 +26,7 @@
 volatile uint32_t* display_buffer  = (volatile uint32_t*) SEG_BASE_ADDR;
 volatile uint32_t* keypad_buffer = (volatile uint32_t*) PAD_BASE_ADDR;
 
-volatile uint32_t* str_float[DISPLAY_SIZE];
+volatile uint32_t str_float[DISPLAY_SIZE];
 
 typedef struct read_name {
    float number;
@@ -34,12 +34,11 @@ typedef struct read_name {
 } read_type;
 
 float power10(int y);
-void intToStr(int x, char str[]);
 read_type read_pad(void);
-void string_to_display( uint32_t* number_string, uint32_t DP_position );
+void string_to_display( volatile uint32_t* number_string, uint32_t DP_position );
 uint8_t char_to_display_code( uint8_t c );
 float calc(float num1, float num2, int op);
-void clear_string( uint32_t* str );
+void clear_string( volatile uint32_t* str );
 
 //power function, eg 2^3 = 8
 float power10(int y) { // if the power function is only used for powers of 10 this could be optimised and x could be an int
@@ -116,7 +115,7 @@ read_type read_pad()
 				// if number is non-zero, number is replaced by -1*number
 				if ( result.number != 0 ){
 					result.number = result.number * -1;
-					str_float[0] = ( result.number > 0 ) ? " ": "-";
+					str_float[0] = ( result.number > 0 ) ? ' ': '-';
 				}
 			}
 			else{ // function
@@ -155,7 +154,7 @@ uint8_t char_to_display_code( uint8_t c )
     }
 }
 
-void string_to_display( uint32_t* number_string, uint32_t DP_position )
+void string_to_display( volatile uint32_t* number_string, uint32_t DP_position )
 {
 	uint32_t i;
 
@@ -173,7 +172,7 @@ void string_to_display( uint32_t* number_string, uint32_t DP_position )
 
 
 
-uint32_t right_align_string( uint32_t* str, uint32_t DP)
+uint32_t right_align_string( volatile uint32_t* str, uint32_t DP)
 {
 	while ( str[8] == ' ' ||  str[8] == '0' )
 	{
@@ -196,7 +195,7 @@ uint32_t right_align_string( uint32_t* str, uint32_t DP)
 }
 
 
-void clear_string( uint32_t* str )
+void clear_string( volatile uint32_t* str )
 {
 	uint32_t i;
 	for ( i=0; i<DISPLAY_SIZE; i++)
@@ -205,7 +204,7 @@ void clear_string( uint32_t* str )
 	}
 }
 
-void error_string( uint32_t* str, uint32_t error_code)
+void error_string( volatile uint32_t* str, uint32_t error_code)
 {
 	str[0] = 'E';
 	str[1] = 'r';
@@ -219,7 +218,7 @@ void error_string( uint32_t* str, uint32_t error_code)
 	str[8] = error_code + 48;
 }
 
-void int_to_string(uint32_t* str, uint32_t display_number)
+void int_to_string( volatile uint32_t* str, uint32_t display_number )
 {
 	uint32_t i, digit;
 
@@ -231,7 +230,7 @@ void int_to_string(uint32_t* str, uint32_t display_number)
     }
 }
 
-uint32_t float_to_string( float f, uint32_t* str )
+uint32_t float_to_string( float f, volatile uint32_t* str )
 {
 	uint32_t i;
 	uint32_t DP;
