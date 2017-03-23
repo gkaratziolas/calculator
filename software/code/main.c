@@ -12,11 +12,11 @@
 #define OP_MINUS    9
 #define OP_TIMES    10
 #define OP_DIVIDE   11
-#define OP_NEGATIVE 12
+#define OP_NEGATIVE 3
 #define OP_EQUALS   4
 #define OP_C        5
 #define OP_DP       6
-#define OP_SQUARED  0
+#define OP_SQUARED  12
 
 #define DISPLAY_SIZE 9
 #define MAX_DIGITS 7
@@ -329,7 +329,7 @@ int main(void) {
                 mode = 0;
                 num1 = 0;
             }
-            else if ( op = OP_SQUARED ){
+            else if ( op == OP_SQUARED ){
                 num1 = x.number*x.number;
                 DP = float_to_string(num1, str_float);
                 string_to_display(str_float, DP);
@@ -355,7 +355,7 @@ int main(void) {
                 num1 = 0;
                 num2 = 0;
             }
-            else if ( op = OP_SQUARED ){
+            else if ( op == OP_SQUARED ){
                 num1 = num1 * num1;
                 DP = float_to_string(num1, str_float);
                 string_to_display(str_float, DP);
@@ -368,4 +368,3 @@ int main(void) {
         }
     }
 }
-
